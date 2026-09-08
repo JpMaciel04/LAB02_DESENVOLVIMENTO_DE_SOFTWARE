@@ -3,6 +3,7 @@
 **PUC Minas — Engenharia de Software**
 Laboratório 1 — Segundo Semestre/2026
 Disciplina: Projeto de Software — Profa. Milena Menezes Adão
+Aluno: João Pedro Maciel de Oliveira
 
 ---
 
@@ -11,8 +12,8 @@ Disciplina: Projeto de Software — Profa. Milena Menezes Adão
 Sistema para informatizar o processo de matrículas de uma universidade. A secretaria gera o currículo de cada semestre e mantém os dados de disciplinas, professores e alunos. Os alunos se matriculam em disciplinas durante um período determinado, e o sistema notifica o sistema de cobranças ao final da inscrição de cada aluno.
 
 **Tecnologia prevista:** Java
-**Interface:** linha de comando (protótipo)
-**Persistência:** arquivos
+**Interface:** linha de comando 
+**Persistência:** via arquivos
 
 ---
 
@@ -229,7 +230,8 @@ O diagrama de casos de uso está em [`docs/casos-de-uso.puml`](docs/casos-de-uso
 ├── docs/
 │   ├── casos-de-uso.puml
 │   └── casos-de-uso.png
-└── src/
+└── code/
+│   ├── src/
 ```
 
 ---
