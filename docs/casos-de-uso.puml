@@ -1,0 +1,88 @@
+@startuml casos-de-uso
+' Sistema de Matriculas - PUC Minas - Projeto de Software
+' Lab01S01 - Modelo de Analise
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+
+actor "Usuário" as Usuario
+actor "Aluno" as Aluno
+actor "Professor" as Professor
+actor "Secretaria" as Secretaria
+actor "Sistema de Cobrança" as Cobranca
+
+Aluno --|> Usuario
+Professor --|> Usuario
+Secretaria --|> Usuario
+
+rectangle "Sistema de Matrículas" {
+
+  usecase "UC01\nEfetuar Login" as UC01
+
+  usecase "UC02\nManter Curso" as UC02
+  usecase "UC03\nManter Disciplina" as UC03
+  usecase "UC04\nManter Professor" as UC04
+  usecase "UC05\nManter Aluno" as UC05
+  usecase "UC06\nGerar Currículo\ndo Semestre" as UC06
+  usecase "UC07\nDefinir Período\nde Matrículas" as UC07
+  usecase "UC12\nEncerrar Período\nde Matrículas" as UC12
+
+  usecase "UC08\nMatricular-se em\nDisciplinas" as UC08
+  usecase "UC09\nCancelar\nMatrícula" as UC09
+  usecase "UC10\nConsultar Disciplinas\nDisponíveis" as UC10
+
+  usecase "UC11\nConsultar Alunos\nMatriculados" as UC11
+
+  usecase "UC13\nNotificar Sistema\nde Cobrança" as UC13
+}
+
+' --- Secretaria ---
+Secretaria --> UC02
+Secretaria --> UC03
+Secretaria --> UC04
+Secretaria --> UC05
+Secretaria --> UC06
+Secretaria --> UC07
+Secretaria --> UC12
+
+' --- Aluno ---
+Aluno --> UC08
+Aluno --> UC09
+Aluno --> UC10
+
+' --- Professor ---
+Professor --> UC11
+
+' --- Ator externo ---
+UC13 --> Cobranca
+
+' --- Relacionamentos ---
+UC02 ..> UC01 : <<include>>
+UC03 ..> UC01 : <<include>>
+UC04 ..> UC01 : <<include>>
+UC05 ..> UC01 : <<include>>
+UC06 ..> UC01 : <<include>>
+UC07 ..> UC01 : <<include>>
+UC12 ..> UC01 : <<include>>
+UC08 ..> UC01 : <<include>>
+UC09 ..> UC01 : <<include>>
+UC10 ..> UC01 : <<include>>
+UC11 ..> UC01 : <<include>>
+
+UC08 ..> UC13 : <<include>>
+
+note right of UC08
+  RN01: 4 obrigatórias + 2 optativas
+  RN03: máximo de 60 alunos
+  RN04: somente no período aberto
+end note
+
+note bottom of UC12
+  RN02: disciplina com < 3 alunos
+  é cancelada; caso contrário,
+  torna-se ativa
+end note
+
+@enduml
