@@ -11,9 +11,9 @@ Aluno: João Pedro Maciel de Oliveira
 
 Sistema para informatizar o processo de matrículas de uma universidade. A secretaria gera o currículo de cada semestre e mantém os dados de disciplinas, professores e alunos. Os alunos se matriculam em disciplinas durante um período determinado, e o sistema notifica o sistema de cobranças ao final da inscrição de cada aluno.
 
-**Tecnologia prevista:** Java
+**Tecnologia:** Java
 **Interface:** linha de comando 
-**Persistência:** via arquivos
+**Persistência de dados:** via arquivos
 
 ---
 
