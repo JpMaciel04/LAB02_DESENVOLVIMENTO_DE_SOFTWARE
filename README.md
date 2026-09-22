@@ -222,16 +222,66 @@ O diagrama de casos de uso está em [`docs/casos-de-uso.puml`](docs/casos-de-uso
 
 ---
 
-## 6. Estrutura do Repositório
+## 6. Diagrama de Classes
+
+O diagrama de classes (Projeto Estrutural — Lab01S02) está em [`docs/diagrama-classes.puml`](docs/diagrama-classes.puml) (fonte PlantUML) e exportado em [`docs/diagrama-classes.png`](docs/diagrama-classes.png).
+
+### 6.1 Arquitetura em Camadas
+
+O projeto segue uma arquitetura em três camadas, refletida tanto no diagrama quanto nos pacotes Java (seção 7):
+
+| Camada | Pacote | Responsabilidade |
+|---|---|---|
+| **Model** | `matriculas.model` | Entidades de domínio (dados + relacionamentos), sem lógica de negócio. |
+| **Service** | `matriculas.service` | Regras de negócio (RN01–RN07) e integração com o `SistemaCobranca` externo. Cada serviço opera sobre as entidades do `model`. |
+| **Controller** | `matriculas.controller` | Orquestra os casos de uso por ator (login, secretaria, aluno, professor), delegando às camadas de `service`. |
+
+### 6.2 Principais Classes do Model
+
+| Classe | Responsabilidade |
+|---|---|
+| **Usuario** (abstrata) | Concentra `id`, `nome` e `senha`; base de `Aluno`, `Professor` e `Secretaria` (RN06). |
+| **Curso** | Nome e número de créditos; agrega as `Disciplina`s do curso (RN07). |
+| **Disciplina** | Nome, tipo (obrigatória/optativa), professor responsável, limite de 60 alunos (RN03) e mínimo de 3 para ativação (RN02). |
+| **Curriculo** | Disciplinas ofertadas em um semestre (UC06). |
+| **PeriodoMatricula** | Datas de início/fim e situação de abertura das matrículas (RN04, UC07/UC12). |
+| **Matricula** | Associação entre `Aluno` e `Disciplina` em um semestre, com situação e data. |
+| **Inscricao** | Agrupa as matrículas de um aluno em um semestre, base para a notificação de cobrança (RN05, UC13). |
+
+### 6.3 Principais Classes do Service e Controller
+
+| Classe | Responsabilidade |
+|---|---|
+| **DisciplinaService** | `temVagas`, `totalMatriculados` e `avaliarSituacao` (RN02/RN03). |
+| **MatriculaService** | `matricular` e `cancelar`, respeitando RN01/RN03/RN04. |
+| **InscricaoService** | `concluir`, que notifica `SistemaCobranca` (RN05, UC13). |
+| **SistemaCobranca** / **SistemaCobrancaService** | Interface e implementação da integração com o ator secundário externo. |
+| **SecretariaController** | Orquestra UC02–UC07 e UC12. |
+| **AlunoController** | Orquestra UC08–UC10 e a consulta de matrículas (US11). |
+| **ProfessorController** | Orquestra UC11. |
+| **LoginController** | Orquestra UC01 via `AutenticacaoService`. |
+
+---
+
+## 7. Estrutura do Repositório
 
 ```
 .
 ├── README.md
 ├── docs/
 │   ├── casos-de-uso.puml
-│   └── casos-de-uso.png
+│   ├── casos-de-uso.png
+│   ├── diagrama-classes.puml
+│   └── diagrama-classes.png
 └── code/
-│   ├── src/
+    ├── pom.xml
+    └── src/
+        ├── main/java/matriculas/
+        │   ├── Main.java
+        │   ├── model/       # Entidades de domínio
+        │   ├── service/     # Regras de negócio
+        │   └── controller/  # Orquestração dos casos de uso
+        └── test/java/matriculas/
 ```
 
 ---
