@@ -50,3 +50,7 @@ Thumbs.db
 .env
 
 CLAUDE.MD
+
+# Dados gerados pelo prototipo
+dados/
+code/dados/

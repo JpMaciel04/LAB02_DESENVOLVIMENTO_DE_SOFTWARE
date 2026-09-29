@@ -1,19 +1,20 @@
 package matriculas.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Matricula {
 
     private Aluno aluno;
     private Disciplina disciplina;
     private String semestre;
-    private Date dataMatricula;
+    private LocalDate dataMatricula;
     private SituacaoMatricula situacao;
 
     public Matricula(Aluno aluno, Disciplina disciplina, String semestre) {
         this.aluno = aluno;
         this.disciplina = disciplina;
         this.semestre = semestre;
+        this.dataMatricula = LocalDate.now();
         this.situacao = SituacaoMatricula.ATIVA;
     }
 
@@ -29,11 +30,11 @@ public class Matricula {
         return semestre;
     }
 
-    public Date getDataMatricula() {
+    public LocalDate getDataMatricula() {
         return dataMatricula;
     }
 
-    public void setDataMatricula(Date dataMatricula) {
+    public void setDataMatricula(LocalDate dataMatricula) {
         this.dataMatricula = dataMatricula;
     }
 

@@ -7,6 +7,7 @@ public class Inscricao {
 
     private Aluno aluno;
     private String semestre;
+    private boolean concluida;
     private List<Matricula> matriculas = new ArrayList<>();
 
     public Inscricao(Aluno aluno, String semestre) {
@@ -20,6 +21,14 @@ public class Inscricao {
 
     public String getSemestre() {
         return semestre;
+    }
+
+    public boolean isConcluida() {
+        return concluida;
+    }
+
+    public void setConcluida(boolean concluida) {
+        this.concluida = concluida;
     }
 
     public List<Matricula> getMatriculas() {

@@ -5,13 +5,19 @@ import java.util.List;
 
 public class Curso {
 
+    private String codigo;
     private String nome;
     private int numeroCreditos;
     private List<Disciplina> disciplinas = new ArrayList<>();
 
-    public Curso(String nome, int numeroCreditos) {
+    public Curso(String codigo, String nome, int numeroCreditos) {
+        this.codigo = codigo;
         this.nome = nome;
         this.numeroCreditos = numeroCreditos;
+    }
+
+    public String getCodigo() {
+        return codigo;
     }
 
     public String getNome() {

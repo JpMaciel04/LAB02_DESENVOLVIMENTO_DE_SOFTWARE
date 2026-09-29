@@ -1,0 +1,59 @@
+@startuml diagrama-arquitetura
+' Sistema de Matriculas - PUC Minas - Projeto de Software
+' Lab01S03 - Arquitetura em camadas do prototipo
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+actor "Aluno / Professor / Secretaria" as Usuario
+actor "Sistema de Cobrança" as Cobranca
+
+package "matriculas" {
+  component "Main + Aplicacao\n(montagem das camadas)" as Main
+
+  package "view" {
+    component "MenuPrincipal / MenuSecretaria\nMenuAluno / MenuProfessor / Console" as View
+  }
+  package "controller" {
+    component "LoginController / SecretariaController\nAlunoController / ProfessorController" as Controller
+  }
+  package "service" {
+    component "Regras de negócio (RN01–RN07)\n*Service + SistemaCobranca" as Service
+  }
+  package "repository" {
+    component "RepositorioArquivo<T>\n+ 6 repositórios por entidade" as Repository
+  }
+  package "model" {
+    component "Entidades de domínio\nUsuario, Curso, Disciplina, Curriculo,\nPeriodoMatricula, Inscricao, Matricula" as Model
+  }
+}
+
+database "pasta dados/\nusuarios.csv  cursos.csv\ndisciplinas.csv  curriculos.csv\ninscricoes.csv  matriculas.csv" as Arquivos
+file "dados/cobrancas.log" as Log
+
+Usuario --> View : linha de comando
+Main ..> View : cria
+Main ..> Controller : cria
+Main ..> Service : cria
+Main ..> Repository : cria
+View --> Controller
+Controller --> Service
+Service --> Repository
+Repository --> Arquivos : lê / grava
+Service --> Log : SistemaCobrancaService
+Log ..> Cobranca : notificação
+
+View ..> Model
+Controller ..> Model
+Service ..> Model
+Repository ..> Model
+
+note right of Service
+  Cada camada só conhece a camada imediatamente
+  abaixo; o model é compartilhado por todas.
+  Violações de regra são sinalizadas com
+  RegraNegocioException e exibidas pela view.
+end note
+
+@enduml

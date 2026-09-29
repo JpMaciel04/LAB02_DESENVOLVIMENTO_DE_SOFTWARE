@@ -11,7 +11,8 @@ public class LoginController {
         this.autenticacaoService = autenticacaoService;
     }
 
+    /** UC01: retorna o usuário autenticado ou lança RegraNegocioException. */
     public Usuario login(String id, String senha) {
-        return null;
+        return autenticacaoService.autenticar(id, senha);
     }
 }

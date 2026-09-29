@@ -8,6 +8,7 @@ public class Disciplina {
     private static final int LIMITE_MAXIMO_ALUNOS = 60;
     private static final int MINIMO_ALUNOS_ATIVACAO = 3;
 
+    private String codigo;
     private String nome;
     private TipoDisciplina tipo;
     private SituacaoDisciplina situacao;
@@ -15,12 +16,17 @@ public class Disciplina {
     private Professor professor;
     private List<Matricula> matriculas = new ArrayList<>();
 
-    public Disciplina(String nome, TipoDisciplina tipo, Curso curso, Professor professor) {
+    public Disciplina(String codigo, String nome, TipoDisciplina tipo, Curso curso, Professor professor) {
+        this.codigo = codigo;
         this.nome = nome;
         this.tipo = tipo;
         this.curso = curso;
         this.professor = professor;
         this.situacao = SituacaoDisciplina.ABERTA;
+    }
+
+    public String getCodigo() {
+        return codigo;
     }
 
     public String getNome() {

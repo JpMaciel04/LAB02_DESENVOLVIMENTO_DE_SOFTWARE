@@ -1,14 +1,14 @@
 package matriculas.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class PeriodoMatricula {
 
-    private Date dataInicio;
-    private Date dataFim;
+    private LocalDate dataInicio;
+    private LocalDate dataFim;
     private boolean aberto;
 
-    public PeriodoMatricula(Date dataInicio, Date dataFim) {
+    public PeriodoMatricula(LocalDate dataInicio, LocalDate dataFim) {
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
     }
@@ -21,19 +21,19 @@ public class PeriodoMatricula {
         this.aberto = aberto;
     }
 
-    public Date getDataInicio() {
+    public LocalDate getDataInicio() {
         return dataInicio;
     }
 
-    public void setDataInicio(Date dataInicio) {
+    public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
     }
 
-    public Date getDataFim() {
+    public LocalDate getDataFim() {
         return dataFim;
     }
 
-    public void setDataFim(Date dataFim) {
+    public void setDataFim(LocalDate dataFim) {
         this.dataFim = dataFim;
     }
 }

@@ -1,6 +1,8 @@
 @startuml casos-de-uso
 ' Sistema de Matriculas - PUC Minas - Projeto de Software
 ' Lab01S01 - Modelo de Analise
+' Lab01S03 - Revisao: UC07 inclui abertura do periodo; novos UC14 e UC15;
+'            a notificacao de cobranca (UC13) passa a ser incluida por UC15
 
 left to right direction
 skinparam packageStyle rectangle
@@ -26,12 +28,14 @@ rectangle "Sistema de Matrículas" {
   usecase "UC04\nManter Professor" as UC04
   usecase "UC05\nManter Aluno" as UC05
   usecase "UC06\nGerar Currículo\ndo Semestre" as UC06
-  usecase "UC07\nDefinir Período\nde Matrículas" as UC07
+  usecase "UC07\nDefinir e Abrir Período\nde Matrículas" as UC07
   usecase "UC12\nEncerrar Período\nde Matrículas" as UC12
 
   usecase "UC08\nMatricular-se em\nDisciplinas" as UC08
   usecase "UC09\nCancelar\nMatrícula" as UC09
   usecase "UC10\nConsultar Disciplinas\nDisponíveis" as UC10
+  usecase "UC14\nConsultar Minhas\nMatrículas" as UC14
+  usecase "UC15\nConfirmar Inscrição\ndo Semestre" as UC15
 
   usecase "UC11\nConsultar Alunos\nMatriculados" as UC11
 
@@ -51,6 +55,8 @@ Secretaria --> UC12
 Aluno --> UC08
 Aluno --> UC09
 Aluno --> UC10
+Aluno --> UC14
+Aluno --> UC15
 
 ' --- Professor ---
 Professor --> UC11
@@ -70,8 +76,16 @@ UC08 ..> UC01 : <<include>>
 UC09 ..> UC01 : <<include>>
 UC10 ..> UC01 : <<include>>
 UC11 ..> UC01 : <<include>>
+UC14 ..> UC01 : <<include>>
+UC15 ..> UC01 : <<include>>
 
-UC08 ..> UC13 : <<include>>
+UC15 ..> UC13 : <<include>>
+
+note right of UC15
+  RN05: ao confirmar a inscrição, o
+  sistema de cobranças é notificado.
+  Alterar matrículas exige nova confirmação.
+end note
 
 note right of UC08
   RN01: 4 obrigatórias + 2 optativas

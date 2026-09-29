@@ -1,13 +1,15 @@
 @startuml diagrama-classes
 ' Sistema de Matriculas - PUC Minas - Projeto de Software
-' Lab01S02 - Projeto Estrutural (Diagrama de Classes)
-' Arquitetura em camadas: model / service / controller
+' Lab01S03 - Diagrama de Classes (revisado para o prototipo implementado)
+' Arquitetura em camadas: view / controller / service / repository / model
 
 skinparam classAttributeIconSize 0
 skinparam shadowing false
+skinparam packageStyle rectangle
 hide circle
 hide empty members
 
+' =====================================================================
 package "model" {
   enum TipoDisciplina {
     OBRIGATORIA
@@ -31,26 +33,23 @@ package "model" {
     - senha: String
   }
 
-  class Aluno extends Usuario {
-  }
-
-  class Professor extends Usuario {
-  }
-
-  class Secretaria extends Usuario {
-  }
+  class Aluno extends Usuario
+  class Professor extends Usuario
+  class Secretaria extends Usuario
 
   class Curso {
+    - codigo: String
     - nome: String
     - numeroCreditos: int
   }
 
   class Disciplina {
+    - {static} LIMITE_MAXIMO_ALUNOS: int = 60
+    - {static} MINIMO_ALUNOS_ATIVACAO: int = 3
+    - codigo: String
     - nome: String
     - tipo: TipoDisciplina
     - situacao: SituacaoDisciplina
-    - limiteMaximoAlunos: int = 60
-    - minimoAlunosAtivacao: int = 3
   }
 
   class Curriculo {
@@ -58,135 +57,251 @@ package "model" {
   }
 
   class PeriodoMatricula {
-    - dataInicio: Date
-    - dataFim: Date
+    - dataInicio: LocalDate
+    - dataFim: LocalDate
     - aberto: boolean
-  }
-
-  class Matricula {
-    - semestre: String
-    - dataMatricula: Date
-    - situacao: SituacaoMatricula
   }
 
   class Inscricao {
     - semestre: String
+    - concluida: boolean
   }
 
-  Curso "1" o-- "many" Disciplina : oferece >
-  Professor "1" -- "many" Disciplina : leciona >
-  Curriculo "1" o-- "many" Disciplina : disponibiliza >
-  PeriodoMatricula "1" -- "many" Matricula : delimita >
-  Aluno "1" -- "many" Matricula : possui >
-  Disciplina "1" -- "many" Matricula : recebe >
-  Matricula "many" --o "1" Inscricao : agrupa >
-  Aluno "1" -- "many" Inscricao : realiza >
-  Disciplina *-- TipoDisciplina
-  Disciplina *-- SituacaoDisciplina
-  Matricula *-- SituacaoMatricula
+  class Matricula {
+    - semestre: String
+    - dataMatricula: LocalDate
+    - situacao: SituacaoMatricula
+  }
+
+  Curso "1" o-- "*" Disciplina : oferece >
+  Professor "1" -- "*" Disciplina : leciona >
+  Curriculo "*" o-- "*" Disciplina : oferta >
+  Curriculo "1" *-- "0..1" PeriodoMatricula : delimita >
+  Aluno "1" -- "*" Inscricao : realiza >
+  Inscricao "1" o-- "*" Matricula : agrupa >
+  Disciplina "1" -- "*" Matricula : recebe >
+  Matricula "*" --> "1" Aluno
 }
 
+' =====================================================================
+package "repository" {
+  abstract class "RepositorioArquivo<T>" as RepositorioArquivo {
+    - arquivo: Path
+    - registros: Map<String, T>
+    + salvar(entidade: T): void
+    + remover(entidade: T): void
+    + buscar(chave: String): Optional<T>
+    + listar(): List<T>
+    # {abstract} chave(entidade: T): String
+    # {abstract} paraCampos(entidade: T): String[]
+    # {abstract} deCampos(campos: String[]): T
+    # carregar(): void
+    # gravar(): void
+  }
+
+  class UsuarioRepository {
+    + listarPorTipo(tipo: Class<T>): List<T>
+  }
+  class CursoRepository
+  class DisciplinaRepository
+  class CurriculoRepository {
+    + getSemestreVigente(): Optional<String>
+    + definirVigente(curriculo: Curriculo): void
+  }
+  class InscricaoRepository {
+    + buscar(aluno: Aluno, semestre: String): Optional<Inscricao>
+  }
+  class MatriculaRepository
+
+  RepositorioArquivo <|-- UsuarioRepository
+  RepositorioArquivo <|-- CursoRepository
+  RepositorioArquivo <|-- DisciplinaRepository
+  RepositorioArquivo <|-- CurriculoRepository
+  RepositorioArquivo <|-- InscricaoRepository
+  RepositorioArquivo <|-- MatriculaRepository
+
+  DisciplinaRepository --> CursoRepository
+  DisciplinaRepository --> UsuarioRepository
+  CurriculoRepository --> DisciplinaRepository
+  InscricaoRepository --> UsuarioRepository
+  MatriculaRepository --> InscricaoRepository
+  MatriculaRepository --> DisciplinaRepository
+}
+
+' =====================================================================
 package "service" {
+  class RegraNegocioException
+
   class AutenticacaoService {
-    + autenticar(usuario: Usuario, senha: String): boolean
+    + autenticar(id: String, senha: String): Usuario
   }
 
   class CursoService {
-    + criar(nome: String, numeroCreditos: int): Curso
-    + atualizar(curso: Curso): void
-    + remover(curso: Curso): void
-    + adicionarDisciplina(curso: Curso, disciplina: Disciplina): void
-    + removerDisciplina(curso: Curso, disciplina: Disciplina): void
-  }
-
-  class DisciplinaService {
-    + criar(nome: String, tipo: TipoDisciplina, curso: Curso, professor: Professor): Disciplina
-    + atualizar(disciplina: Disciplina): void
-    + remover(disciplina: Disciplina): void
-    + temVagas(disciplina: Disciplina): boolean
-    + totalMatriculados(disciplina: Disciplina): int
-    + avaliarSituacao(disciplina: Disciplina): void
+    + criar(codigo: String, nome: String, numeroCreditos: int): Curso
+    + atualizar(codigo: String, nome: String, numeroCreditos: int): Curso
+    + remover(codigo: String): void
+    + buscar(codigo: String): Curso
+    + listar(): List<Curso>
   }
 
   class ProfessorService {
-    + cadastrar(professor: Professor): void
-    + consultarAlunosMatriculados(professor: Professor, disciplina: Disciplina): List<Aluno>
+    + cadastrar(id: String, nome: String, senha: String): Professor
+    + atualizar(id: String, nome: String, senha: String): Professor
+    + remover(id: String): void
+    + buscar(id: String): Professor
+    + listar(): List<Professor>
+    + consultarAlunosMatriculados(professor: Professor, disciplina: Disciplina, semestre: String): List<Aluno>
   }
 
   class AlunoService {
-    + cadastrar(aluno: Aluno): void
+    + cadastrar(id: String, nome: String, senha: String): Aluno
+    + atualizar(id: String, nome: String, senha: String): Aluno
+    + remover(id: String): void
+    + buscar(id: String): Aluno
+    + listar(): List<Aluno>
+  }
+
+  class DisciplinaService {
+    + criar(codigo, nome, tipo: TipoDisciplina, codigoCurso, idProfessor): Disciplina
+    + atualizar(codigo, nome, tipo: TipoDisciplina, idProfessor): Disciplina
+    + remover(codigo: String): void
+    + buscar(codigo: String): Disciplina
+    + listar(): List<Disciplina>
+    + temVagas(disciplina: Disciplina, semestre: String): boolean
+    + vagasRestantes(disciplina: Disciplina, semestre: String): int
+    + totalMatriculados(disciplina: Disciplina, semestre: String): int
+    + avaliarSituacao(disciplina: Disciplina, semestre: String): void
   }
 
   class CurriculoService {
     + gerar(semestre: String): Curriculo
-    + adicionarDisciplina(curriculo: Curriculo, disciplina: Disciplina): void
+    + definirVigente(semestre: String): void
+    + adicionarDisciplina(semestre: String, codigoDisciplina: String): void
+    + removerDisciplina(semestre: String, codigoDisciplina: String): void
+    + buscar(semestre: String): Curriculo
+    + listar(): List<Curriculo>
+    + obterVigente(): Curriculo
     + listarDisciplinasDisponiveis(curriculo: Curriculo): List<Disciplina>
   }
 
   class PeriodoMatriculaService {
-    + definir(inicio: Date, fim: Date): PeriodoMatricula
-    + abrir(periodo: PeriodoMatricula): void
-    + encerrar(periodo: PeriodoMatricula): void
+    + definir(semestre: String, inicio: LocalDate, fim: LocalDate): PeriodoMatricula
+    + abrir(semestre: String): void
+    + encerrar(semestre: String): List<Disciplina>
     + estaAberto(periodo: PeriodoMatricula): boolean
   }
 
   class MatriculaService {
-    + matricular(aluno: Aluno, disciplina: Disciplina, semestre: String): Matricula
-    + cancelar(matricula: Matricula): void
+    - {static} MAXIMO_OBRIGATORIAS: int = 4
+    - {static} MAXIMO_OPTATIVAS: int = 2
+    + matricular(aluno: Aluno, codigoDisciplina: String): Matricula
+    + cancelar(aluno: Aluno, codigoDisciplina: String): void
+    + listarMatriculas(aluno: Aluno, semestre: String): List<Matricula>
   }
 
   class InscricaoService {
-    + concluir(inscricao: Inscricao): void
+    + buscar(aluno: Aluno, semestre: String): Optional<Inscricao>
+    + obterOuCriar(aluno: Aluno, semestre: String): Inscricao
+    + reabrir(inscricao: Inscricao): void
+    + concluir(inscricao: Inscricao): boolean
   }
 
   interface SistemaCobranca {
     + notificar(aluno: Aluno, semestre: String, disciplinas: List<Disciplina>): void
   }
 
-  class SistemaCobrancaService implements SistemaCobranca {
+  class SistemaCobrancaService {
+    - arquivo: Path
   }
 
-  InscricaoService ..> SistemaCobranca : notifica >
+  SistemaCobranca <|.. SistemaCobrancaService
+  InscricaoService --> SistemaCobranca : notifica >
+  DisciplinaService --> CursoService
+  DisciplinaService --> ProfessorService
+  CurriculoService --> DisciplinaService
+  PeriodoMatriculaService --> CurriculoService
+  PeriodoMatriculaService --> DisciplinaService
+  MatriculaService --> CurriculoService
+  MatriculaService --> PeriodoMatriculaService
+  MatriculaService --> DisciplinaService
+  MatriculaService --> InscricaoService
 }
 
+' =====================================================================
 package "controller" {
   class LoginController {
     + login(id: String, senha: String): Usuario
   }
 
   class SecretariaController {
-    + manterCurso(curso: Curso): void
-    + manterDisciplina(disciplina: Disciplina): void
-    + manterProfessor(professor: Professor): void
-    + manterAluno(aluno: Aluno): void
+    + cadastrarCurso / alterarCurso / removerCurso / listarCursos
+    + cadastrarDisciplina / alterarDisciplina / removerDisciplina / listarDisciplinas
+    + cadastrarProfessor / alterarProfessor / removerProfessor / listarProfessores
+    + cadastrarAluno / alterarAluno / removerAluno / listarAlunos
     + gerarCurriculo(semestre: String): Curriculo
-    + definirPeriodoMatriculas(inicio: Date, fim: Date): PeriodoMatricula
-    + encerrarPeriodoMatriculas(periodo: PeriodoMatricula): void
+    + adicionarDisciplinaAoCurriculo(semestre, codigoDisciplina): void
+    + removerDisciplinaDoCurriculo(semestre, codigoDisciplina): void
+    + definirPeriodoMatriculas(semestre, inicio: LocalDate, fim: LocalDate): PeriodoMatricula
+    + abrirPeriodoMatriculas(semestre: String): void
+    + encerrarPeriodoMatriculas(semestre: String): List<Disciplina>
   }
 
   class AlunoController {
-    + consultarDisciplinasDisponiveis(curriculo: Curriculo): List<Disciplina>
-    + matricular(aluno: Aluno, disciplina: Disciplina, semestre: String): Matricula
-    + cancelarMatricula(matricula: Matricula): void
-    + consultarMinhasMatriculas(aluno: Aluno, semestre: String): List<Matricula>
+    + consultarDisciplinasDisponiveis(): List<Disciplina>
+    + vagasRestantes(disciplina: Disciplina): int
+    + matricular(aluno: Aluno, codigoDisciplina: String): Matricula
+    + cancelarMatricula(aluno: Aluno, codigoDisciplina: String): void
+    + consultarMinhasMatriculas(aluno: Aluno): List<Matricula>
+    + concluirInscricao(aluno: Aluno): boolean
   }
 
   class ProfessorController {
-    + consultarAlunosMatriculados(professor: Professor, disciplina: Disciplina): List<Aluno>
+    + listarMinhasDisciplinas(professor: Professor): List<Disciplina>
+    + consultarAlunosMatriculados(professor: Professor, codigoDisciplina: String): List<Aluno>
   }
 }
 
+' =====================================================================
+package "view" {
+  class Console
+  class MenuPrincipal
+  class MenuSecretaria
+  class MenuAluno
+  class MenuProfessor
+
+  MenuPrincipal --> MenuSecretaria
+  MenuPrincipal --> MenuAluno
+  MenuPrincipal --> MenuProfessor
+}
+
 ' --- Dependencias entre camadas ---
-LoginController ..> AutenticacaoService : usa >
-SecretariaController ..> CursoService : usa >
-SecretariaController ..> DisciplinaService : usa >
-SecretariaController ..> ProfessorService : usa >
-SecretariaController ..> AlunoService : usa >
-SecretariaController ..> CurriculoService : usa >
-SecretariaController ..> PeriodoMatriculaService : usa >
-AlunoController ..> CurriculoService : usa >
-AlunoController ..> MatriculaService : usa >
-AlunoController ..> InscricaoService : usa >
-ProfessorController ..> ProfessorService : usa >
+MenuPrincipal ..> LoginController
+MenuSecretaria ..> SecretariaController
+MenuAluno ..> AlunoController
+MenuProfessor ..> ProfessorController
+
+LoginController ..> AutenticacaoService
+SecretariaController ..> CursoService
+SecretariaController ..> DisciplinaService
+SecretariaController ..> ProfessorService
+SecretariaController ..> AlunoService
+SecretariaController ..> CurriculoService
+SecretariaController ..> PeriodoMatriculaService
+AlunoController ..> CurriculoService
+AlunoController ..> PeriodoMatriculaService
+AlunoController ..> MatriculaService
+AlunoController ..> InscricaoService
+ProfessorController ..> ProfessorService
+ProfessorController ..> DisciplinaService
+
+AutenticacaoService ..> UsuarioRepository
+CursoService ..> CursoRepository
+ProfessorService ..> UsuarioRepository
+AlunoService ..> UsuarioRepository
+DisciplinaService ..> DisciplinaRepository
+CurriculoService ..> CurriculoRepository
+PeriodoMatriculaService ..> CurriculoRepository
+InscricaoService ..> InscricaoRepository
+MatriculaService ..> MatriculaRepository
 
 @enduml
